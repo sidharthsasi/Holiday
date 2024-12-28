@@ -1,0 +1,145 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Holiday List</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+
+    <main class="container mt-4">
+        <!-- Search and Filter Section -->
+        <div class="card mb-4 shadow-sm">
+            <div class="card-body">
+                <form method="get" action="{% url 'search-holidays' %}" class="row g-3">
+                    <div class="col-md-4">
+                        <input type="text" name="search" class="form-control" placeholder="Search holidays" value="{{ search_query }}">
+                    </div>
+                    <div class="col-md-3">
+                        <select name="month" class="form-select">
+                            <option value="">Select Month</option>
+                            {% for month_num, month_name in months %}
+                            <option value="{{ month_num }}" {% if month_num == selected_month %}selected{% endif %}>
+                                {{ month_name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select name="year" class="form-select">
+                            <option value="">Select Year</option>
+                            {% for year in years %}
+                            <option value="{{ year }}" {% if year == selected_year %}selected{% endif %}>
+                                {{ year }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100">Search</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Holiday Table -->
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered shadow-sm">
+                <thead class="table-dark">
+                    <tr>
+                        <th>#</th>
+                        <th>Holiday Name</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for holiday in holidays %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ holiday.name }}</td>
+                        <td>{{ holiday.date.iso }}</td>
+                        <td>
+                            <button class="btn btn-info btn-sm" 
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#holidayModal"
+                                    data-name="{{ holiday.name }}"
+                                    data-date="{{ holiday.date.iso }}"
+                                    data-description="{{ holiday.description }}"
+                                    data-type="{{ holiday.type|join:', ' }}">
+                                View Details
+                            </button>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center text-muted">No holidays available.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <!-- Holiday Details Modal -->
+    <div class="modal fade" id="holidayModal" tabindex="-1" aria-labelledby="holidayModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="holidayModalLabel">Holiday Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p><strong>Name:</strong> <span id="modal-holiday-name"></span></p>
+                    <p><strong>Date:</strong> <span id="modal-holiday-date"></span></p>
+                    <p><strong>Type:</strong> <span id="modal-holiday-type"></span></p>
+                    <p><strong>Description:</strong></p>
+                    <p id="modal-holiday-description" class="text-muted"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white text-center py-3 mt-5">
+        <div class="container">
+            <p class="mb-0">&copy; 2024 Holiday Tracker. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Custom JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const holidayModal = document.getElementById('holidayModal');
+            holidayModal.addEventListener('show.bs.modal', (event) => {
+                const button = event.relatedTarget;
+
+                // Extract data attributes
+                const name = button.getAttribute('data-name');
+                const date = button.getAttribute('data-date');
+                const description = button.getAttribute('data-description');
+                const type = button.getAttribute('data-type');
+
+                // Populate modal
+                document.getElementById('modal-holiday-name').textContent = name;
+                document.getElementById('modal-holiday-date').textContent = date;
+                document.getElementById('modal-holiday-description').textContent = description;
+                document.getElementById('modal-holiday-type').textContent = type;
+            });
+        });
+    </script>
+</body>
+</html>
